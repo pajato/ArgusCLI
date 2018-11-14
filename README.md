@@ -1,2 +1,2 @@
-# ArgusKMP
-Argus applications using Kotlin Multiplatform Project
+# ArgusWinLinMac
+Argus Kotlin command line applications for Windows, Linux and MacOS using a Kotlin multiplatform project.
