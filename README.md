@@ -1,2 +1,2 @@
-# ArgusNative
-Argus Kotlin command line applications for Windows, Linux and MacOS using a Kotlin multiplatform project.
+# ArgusCommandLine
+Argus Kotlin command line applications for Java and native Windows, Linux and MacOS using a Kotlin multiplatform project.
