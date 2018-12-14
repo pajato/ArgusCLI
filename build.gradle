@@ -1,0 +1,87 @@
+plugins {
+    id "kotlin-multiplatform" version "1.3.11"
+    id "jacoco"
+    id "maven-publish"
+}
+
+repositories {
+    mavenCentral()
+}
+
+//apply plugin: "jacoco"
+
+jacoco {
+    toolVersion = "0.8.2"
+}
+
+task coverageReportJVM(type: JacocoReport) {
+    //dependsOn = test
+    group = "Reporting"
+    description = "Generate Jacoco coverage report."
+    classDirectories = fileTree(dir: "$buildDir/classes/kotlin/jvm/main")
+    def coverageSourceDirs = ["src/commonMain/kotlin", "src/jvmMain/kotlin"]
+    additionalSourceDirs = files(coverageSourceDirs)
+    sourceDirectories = files(coverageSourceDirs)
+    executionData = files("$buildDir/jacoco/jvmTest.exec")
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = false
+    }
+}
+
+group "com.pajato.argus.cli"
+version "0.0.1"
+
+//apply plugin: "maven-publish"
+
+kotlin {
+    targets {
+        fromPreset(presets.jvm, "jvm")
+        // Not supported until somone writes the code to do so ... fromPreset(presets.js, "js")
+        // For ARM, preset should be changed to presets.iosArm32 or presets.iosArm64
+        // For Linux, preset should be changed to e.g. presets.linuxX64
+        // For MacOS, preset should be changed to e.g. presets.macosX64
+        //fromPreset(presets.macosX64, "macos")
+    }
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-stdlib-common"
+                implementation "com.pajato.io:KFile:0.0.2"
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-test-common"
+                implementation "org.jetbrains.kotlin:kotlin-test-annotations-common"
+                implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1"
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-test"
+                implementation "org.jetbrains.kotlin:kotlin-test-junit"
+            }
+        }
+        macosMain {}
+        macosTest {}
+    }
+}
+
+task runProgram {
+    def buildType = "release" // Change to "debug" to run application with debug symbols.
+    dependsOn "link${buildType.capitalize()}ExecutableMacos"
+    doLast {
+        def programFile = kotlin.targets.macos.compilations.main.getBinary("EXECUTABLE", buildType)
+        exec {
+            executable programFile
+            args = ""
+        }
+    }
+}
