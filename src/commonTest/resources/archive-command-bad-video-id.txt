@@ -1,0 +1,2 @@
+register Game of Thrones
+archive 0aaa true
