@@ -1,5 +1,6 @@
 package com.pajato.argus.cli
 
+import com.pajato.io.KFile
 import com.pajato.io.createKotlinFile
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -8,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 val repoFile = createKotlinFile("build", ".argus-repo")
 val errorFile = createKotlinFile("build", ".argus-errors")
@@ -28,14 +30,8 @@ internal fun runTest(commandFileName: String): Int {
 }
 
 internal fun verifyNoErrors(originalSize: Int, exitCode: Int) {
-    fun getErrorMessage(): String {
-        val message = "Unexpected errors:!"
-        errorFile.forEachLine { println(it) }
-        return message
-    }
-
     val expectedExitCode = if (errorFile.size() > 0) -1 else 0
-    assertEquals(originalSize, errorFile.size(), getErrorMessage())
+    assertEquals(originalSize, errorFile.size(), "Unexpected errors:! See error file (${errorFile.path} for details.")
     assertEquals(expectedExitCode, exitCode, "Incorrect exit status!")
 }
 
@@ -94,6 +90,17 @@ class ReplTest {
     @Test
     fun `read an update command and verify no errors and a changed repo file size`() {
         val exitCode = runTest("update-command.txt")
+        assertNotEquals(0, repoFile.size(), "The repo file has not changed size!")
+        verifyNoErrors(0, exitCode)
+    }
+
+    @Test
+    fun `drive command line input from redirected stdin using a valid file`() {
+        val dir = "src/commonTest/resources"
+        val name = "register-command.txt"
+        val file = createKotlinFile(dir, name)
+        redirectConsoleInput(file)
+        val exitCode = runConsoleTest()
         assertNotEquals(0, repoFile.size(), "The repo file has not changed size!")
         verifyNoErrors(0, exitCode)
     }
