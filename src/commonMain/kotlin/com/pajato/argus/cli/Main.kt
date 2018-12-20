@@ -5,7 +5,7 @@ import com.pajato.argus.core.video.UpdateType.*
 import com.pajato.io.KFile
 
 expect fun readNextLine(): String?
-expect fun redirectConsoleInput(file: KFile)
+expect fun redirectConsoleInput(file: KFile): Int
 
 internal val archiveRE = Regex("([0-9]+) (true|false)")
 internal val commandRE = Regex("(register|archive|update) (.+)")

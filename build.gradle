@@ -35,14 +35,21 @@ version "0.0.1"
 
 //apply plugin: "maven-publish"
 
+final def os = org.gradle.internal.os.OperatingSystem.current()
+
 kotlin {
+    final def nativePreset = os.isWindows() ? presets.mingwX64
+            : os.isLinux()   ? presets.linuxX64
+            : os.isMacOsX()  ? presets.macosX64
+            : /*unknown host*/ null
+
     targets {
         fromPreset(presets.jvm, "jvm")
         // Not supported until somone writes the code to do so ... fromPreset(presets.js, "js")
         // For ARM, preset should be changed to presets.iosArm32 or presets.iosArm64
         // For Linux, preset should be changed to e.g. presets.linuxX64
         // For MacOS, preset should be changed to e.g. presets.macosX64
-        //fromPreset(presets.macosX64, "macos")
+        fromPreset(presets.macosX64, "macos")
     }
     sourceSets {
         commonMain {

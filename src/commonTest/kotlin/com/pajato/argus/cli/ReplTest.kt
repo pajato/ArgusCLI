@@ -1,6 +1,5 @@
 package com.pajato.argus.cli
 
-import com.pajato.io.KFile
 import com.pajato.io.createKotlinFile
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -9,7 +8,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 val repoFile = createKotlinFile("build", ".argus-repo")
 val errorFile = createKotlinFile("build", ".argus-errors")
