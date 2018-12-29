@@ -3,26 +3,57 @@ package com.pajato.argus.cli
 import com.pajato.argus.core.video.*
 import com.pajato.argus.core.video.UpdateType.*
 import com.pajato.io.KFile
+import com.pajato.io.createKotlinFile
 
-expect fun readNextLine(): String?
+const val dirArgName = "-dir="
+const val errorArgName = "-errorFileName="
+const val repoArgName = "-repoFileName="
+const val promptArgName = "-prompt="
+
+/**
+ * The main invocation interface. Arguments:
+ *
+ * -dir: the directory path to contain the repository and error files. Defaults to the User home directory.
+ * -errorFileName: the name of the file containing errors. Defaults to .argus-errors
+ * -repoFileName: the repository file name. Defaults to .argus-repo
+ * -prompt: the command line prompt. Defaults to '> '
+ */
+fun main(args: Array<String>) {
+    fun getArg(name: String, default: String): String {
+        args.forEach { arg ->
+            if (arg.startsWith(name) && arg.length > name.length) return arg.substring(name.length, arg.length)
+        }
+        return default
+    }
+
+    val dir = getArg(dirArgName, getHomeDir())
+    val repoFile: KFile = createKotlinFile(dir, getArg(repoArgName, ".argus-repo"))
+    val errorFile: KFile = createKotlinFile(dir, getArg(errorArgName, ".argus-errors"))
+    val runner = CommandRunner(repoFile, errorFile, getArg(promptArgName, "> "))
+
+    if (runner.runCommandsFromConsole() == 0) println("OK") else println("Argus failed.")
+}
+
+expect fun readNextLine(prompt: String = ""): String?
 expect fun redirectConsoleInput(file: KFile): Int
+expect fun getHomeDir(): String
 
 internal val archiveRE = Regex("([0-9]+) (true|false)")
 internal val commandRE = Regex("(register|archive|update) (.+)")
 internal val updateRE = Regex("([0-9]+) (Add|Remove|RemoveAll) ([a-zA-Z]+) (.+)")
 
 /** Provide a command runner class to accept commands from a file or from the console. */
-class CommandRunner(repoFile: KFile, private val errorFile: KFile) {
+class CommandRunner(repoFile: KFile, private val errorFile: KFile, private val prompt: String = "") {
     private val useCase = VideoInteractor(Registrar(createEventStore(repoFile.path)))
 
     /** Read commands from standard in. */
     fun runCommandsFromConsole(): Int {
         tailrec fun runCommand(line: String?, action: (line: String) -> Unit) {
             line?.let { action(line) } ?: return
-            runCommand(readNextLine(), action)
+            runCommand(readNextLine(prompt), action)
         }
 
-        runCommand(readNextLine()) {
+        runCommand(readNextLine(prompt)) {
             processCommand(it)
         }
         return exitCode()

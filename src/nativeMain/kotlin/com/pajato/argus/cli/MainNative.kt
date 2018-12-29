@@ -5,7 +5,7 @@ import platform.posix.dup2
 import platform.posix.fileno
 import platform.posix.fopen
 
-actual fun readNextLine(): String? = readLine()
+actual fun readNextLine(prompt: String): String? = readLine()
 /*
 actual fun sleep(delayInMilliseconds: Long) {
     val delayInSeconds = (delayInMilliseconds + 1000L) / 1000L
@@ -18,4 +18,8 @@ actual fun redirectConsoleInput(file: KFile): Int {
     if (fd < 0) return fd
     val result: Int = dup2(fd, stdin)
     return if (result < 0) result else 0
+}
+
+actual fun getHomeDir(): String {
+    return "~/"
 }
